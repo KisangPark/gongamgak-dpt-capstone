@@ -5,9 +5,14 @@ import requests
 import matplotlib.pyplot as plt
 import numpy as np
 
+import time
+
 # Load image
 # image_url = "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/dpt_depth_example.jpg"
 # image = Image.open(requests.get(image_url, stream=True).raw)
+
+image_path = "test_images/dpt_ex_pic_1.png"
+image = Image.open(image_path).convert("RGB")
 
 # Check for CUDA
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -16,6 +21,9 @@ print(f"Using device: {device}")
 # Load model and feature extractor
 feature_extractor = DPTFeatureExtractor.from_pretrained("Intel/dpt-large")
 model = DPTForDepthEstimation.from_pretrained("Intel/dpt-large").to(device)
+
+# check inference time
+time_1 = time.time()
 
 # Prepare image
 inputs = feature_extractor(images=image, return_tensors="pt").to(device)
@@ -40,6 +48,11 @@ depth = predicted_depth.cpu().numpy()
 depth_min = depth.min()
 depth_max = depth.max()
 depth_vis = (depth - depth_min) / (depth_max - depth_min)
+
+# inference time
+time_2 = time.time()
+time_diff = time_2 - time_1
+print(f"Inference time: {time_diff}")
 
 # Show result
 plt.figure(figsize=(10, 5))
