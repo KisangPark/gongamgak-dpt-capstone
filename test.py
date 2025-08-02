@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # Load image
-image_url = "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/dpt_depth_example.jpg"
-image = Image.open(requests.get(image_url, stream=True).raw)
+# image_url = "https://huggingface.co/datasets/huggingface/documentation-images/resolve/main/dpt_depth_example.jpg"
+# image = Image.open(requests.get(image_url, stream=True).raw)
 
 # Check for CUDA
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
