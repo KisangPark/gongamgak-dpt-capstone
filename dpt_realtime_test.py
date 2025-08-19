@@ -1,5 +1,5 @@
 import torch
-from transformers import DPTFeatureExtractor, DPTForDepthEstimation
+from transformers import DPTImageProcessor, DPTFeatureExtractor, DPTForDepthEstimation
 from PIL import Image
 import requests
 import matplotlib.pyplot as plt
@@ -14,8 +14,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print(f"Using device: {device}")
 
 # Load model and feature extractor
-feature_extractor = DPTFeatureExtractor.from_pretrained("Intel/dpt-large")
-model = DPTForDepthEstimation.from_pretrained("Intel/dpt-large").to(device)
+feature_extractor = DPTImageProcessor.from_pretrained("gillich/dpt-hybrid-midas-safetensor")
+model = DPTForDepthEstimation.from_pretrained("gillich/dpt-hybrid-midas-safetensor").to(device)
 
 
 cap = cv2.VideoCapture(0) # /dev/video0
