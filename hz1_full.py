@@ -10,19 +10,27 @@ import cv2
 # haptic_device = HAPTIC_DEVICE(port_name=PORT_NAME, baudrate=BAUDRATE)
 
 
+# video capture (explicit)
+cap = cv2.VideoCapture(0)
+
+ret, frame = cap.read()
+if not ret:
+    raise ValueError("no camera returned")
+
+# declare models
 dpt_model = DPT()
-
-
 detection_model = YOLODetector()
-detection_model.detect()
+
+# yolo inference
+detection_model.inference(frame)
 bbox_list = detection_model.get_bounding_boxes()
 frame = detection_model.get_annotated_frame()
 
-
+# crop & dpt inference
 cropped_image = crop_to_bounding_box(frame, bbox_list[0])
-dpt_model.receive_image(frame)
+dpt_model.inference(frame)
 
-visualized_depth = dpt_model.get_depth()
+visualized_depth = dpt_model.return_depth_image()
 cv2.imshow('example', visualized_depth)
 cv2.waitKey(0)
 cv2.destroyAllWindows()

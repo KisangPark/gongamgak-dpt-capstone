@@ -6,19 +6,10 @@ class YOLODetector:
         # Load YOLO model
         self.model = YOLO("yolo_models/yolov8n.pt")
         self.model.to("cuda")
-
-        # Open video capture
-        self.cap = cv2.VideoCapture(0) #/dev/video0
-
         self.detection=None
 
-    def detect(self):
+    def inference(self, frame):
         """Capture a frame, run detection, and return results and annotated frame"""
-        ret, frame = self.cap.read()
-        if not ret:
-            print("no camera returned")
-            return None, None
-
         results = self.model(frame)
         self.detection = results[0]
         self.annotated_frame = results[0].plot()
@@ -33,12 +24,9 @@ class YOLODetector:
     def get_annotated_frame(self):
         return self.annotated_frame
     
-    def release(self):
-        self.cap.release()
-        cv2.destroyAllWindows()
 
 
-def crop_to_bounding_box(self, image, box):
+def crop_to_bounding_box(image, box):
     """Return the cropped image inside the bounding box (x1, y1, x2, y2)"""
     x1, y1, x2, y2 = map(int, box)
     cropped = image[y1:y2, x1:x2]

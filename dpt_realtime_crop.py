@@ -20,6 +20,7 @@ print(f"Using device: {device}")
 #model = DPTForDepthEstimation.from_pretrained("gillich/dpt-hybrid-midas-safetensor").to(device)
 feature_extractor = DPTImageProcessor.from_pretrained("Intel/dpt-swinv2-tiny-256")
 model = DPTForDepthEstimation.from_pretrained("Intel/dpt-swinv2-tiny-256").to(device)
+feature_extractor.do_resize = False
 
 cap = cv2.VideoCapture(0) # /dev/video0
 
@@ -30,8 +31,14 @@ try:
 except:
     raise ValueError("Exception occured, mola")
 
-rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+# 정사각형 이미지 input 넣기 
+if ret:
+    # frame.shape = (480, 640, 3)  # (height, width, channels)
+    cropped = frame[112:368, 192:448]
+
+rgb_image = cv2.cvtColor(cropped, cv2.COLOR_BGR2RGB)
 image = Image.fromarray(rgb_image) # pil_
+
 
 
 # check inference time
@@ -46,14 +53,6 @@ with torch.no_grad():
     outputs = model(**inputs)
     predicted_depth = outputs.predicted_depth
 
-#pdb.set_trace()
-# # Resize to original image size
-# predicted_depth = torch.nn.functional.interpolate(
-#     predicted_depth.unsqueeze(1),
-#     size=image.size[::-1],  # (height, width)
-#     mode="bicubic",
-#     align_corners=False,
-# ).squeeze()
 
 # Convert to NumPy
 #depth = predicted_depth.cpu().numpy()
@@ -66,6 +65,28 @@ depth_min = depth.min()
 depth_max = depth.max()
 depth_vis = (depth - depth_min) / (depth_max - depth_min)
 
+#depth_blocks_max = depth_vis.reshape(4, 64, 4, 64).max(axis=(1, 3))
+
+
+depth_blocks = depth_vis.reshape(4, 64, 4, 64)  # (4, 64, 4, 64)
+result = np.zeros((4, 4), dtype=depth.dtype)
+
+for i in range(4):
+    for j in range(4):
+        block = depth_blocks[i, :, j, :]  # (64, 64)
+        flat = block.ravel()              # (4096,)
+        # np.partition: k번째로 작은 값을 빠르게 찾음
+        # 10번째 큰 값 = (4096 - 10)번째 작은 값
+        kth_val = np.partition(flat, -10)[-10]
+        result[i, j] = kth_val
+
+print(result.shape)  # (4, 4)
+print(result)
+
+#print(depth_blocks_max.shape)  # (4, 4)
+#print(depth_blocks_max)
+
+#pdb.set_trace()
 #pdb.set_trace()
 
 # inference time

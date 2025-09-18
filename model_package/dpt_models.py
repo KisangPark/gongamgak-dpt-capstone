@@ -24,31 +24,10 @@ class DPT():
         #feature_extractor = DPTImageProcessor.from_pretrained("gillich/dpt-hybrid-midas-safetensor")
         #model = DPTForDepthEstimation.from_pretrained("gillich/dpt-hybrid-midas-safetensor").to(device)
 
-        self.cap = cv2.VideoCapture(0) # /dev/video0
-
-    def capture(self):
-        # capture with cv
-
-        # try:
-        ret, frame = self.cap.read()
-        if not ret:
-            raise ValueError("not returned")
-        # except:
-        #     raise ValueError("Exception occured, mola")
-
-        rgb_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        self.image = Image.fromarray(rgb_image) # pil_
-
-    def receive_image(self, image):
-        self.image = image
-        self.image = Image.fromarray(rgb_image)
-
-
-
-    def get_depth(self):
+    def inference(self, frame):
 
         # Prepare image
-        inputs = self.feature_extractor(images=self.image, return_tensors="pt").to(self.device)
+        inputs = self.feature_extractor(images=frame, return_tensors="pt").to(self.device)
 
         with torch.no_grad():
             outputs = self.model(**inputs)
@@ -58,23 +37,16 @@ class DPT():
             depth_min = depth.min()
             depth_max = depth.max()
             self.depth_vis = (depth - depth_min) / (depth_max - depth_min) # normalized
+            # depth map returned
 
+
+    def return_depth_image(self):
         return self.depth_vis
-
-
-    def get_image(self):
-        return self.image
 
 
     """ FUNCTION: segment image & return haptic data """
     def get_haptic(self):
-        depth_map = self.get_depth()
+        depth_map = self.return_depth_image()
         width, height = depth_map.shape() # 256, 256
 
-        # haptic signal loop
-
-    # def get_depth_bbox(self, bbox_list):
-    #     # crop image with bounding box
-    #     for bbox in bbox_list:
-    #         for bbox[0]
 
